@@ -8,12 +8,8 @@ import { Check } from "lucide-react";
 import Navbar from "@/components/shared/Navbar";
 import type { Campaign } from "@/types";
 import { useCampaigns } from "@/context/CampaignContext";
+import { useCampaignDraft } from "@/context/CampaignDraftContext";
 import { generateId } from "@/lib/utils";
-import type { CampaignFormData } from "@/types";
-
-type DraftCampaignContext = ReturnType<typeof useCampaigns> & {
-  draft?: CampaignFormData;
-};
 
 export default function ReviewCampaignPage() {
   return <ReviewCampaignPageInner />;
@@ -23,11 +19,8 @@ function ReviewCampaignPageInner() {
   const router = useRouter();
   const stepFrom = "pledges" as string;
 
-  const campaignsCtx = useCampaigns() as DraftCampaignContext;
-
-  const form = campaignsCtx.draft as CampaignFormData | undefined;
-
-  const { dispatch } = campaignsCtx;
+  const { dispatch } = useCampaigns();
+  const { draft: form, setDraft } = useCampaignDraft();
 
   if (!form) {
     return (
@@ -212,6 +205,7 @@ function ReviewCampaignPageInner() {
                     } satisfies Campaign;
 
                     dispatch({ type: "ADD_CAMPAIGN", payload: campaign });
+                    setDraft(null);
                     router.push(`/campaigns/${campaign.id}`);
                   }}
                   className="w-full rounded-full bg-[#02A95C] px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#018A4B] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"

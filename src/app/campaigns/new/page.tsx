@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/shared/Navbar";
 import type { Campaign, CampaignFormData, PledgeTier } from "@/types";
 import { useCampaigns } from "@/context/CampaignContext";
+import { useCampaignDraft } from "@/context/CampaignDraftContext";
 
 import { generateId } from "@/lib/utils";
 
@@ -75,6 +76,7 @@ function fieldClass(hasError?: boolean) {
 export default function NewCampaignPage() {
   const router = useRouter();
   const { dispatch } = useCampaigns();
+  const { setDraft } = useCampaignDraft();
 
   const initialForm = useMemo<CampaignFormData>(
     () => ({
@@ -122,6 +124,10 @@ export default function NewCampaignPage() {
     const launchDelay = window.setTimeout(() => setCanLaunch(true), 700);
     return () => window.clearTimeout(launchDelay);
   }, [isReviewStep]);
+
+  useEffect(() => {
+    setDraft(form);
+  }, [form, setDraft]);
 
   function clearError(field: keyof Omit<FormErrors, "pledges">) {
     setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -261,6 +267,7 @@ export default function NewCampaignPage() {
     setIsSubmitting(true);
     const campaign = buildCampaign();
     dispatch({ type: "ADD_CAMPAIGN", payload: campaign });
+    setDraft(null);
     toast.success("Campaign launched successfully", {
       description: `${campaign.title} is now live and ready for backers.`,
     });
