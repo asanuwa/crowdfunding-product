@@ -26,8 +26,8 @@ function ReviewCampaignPageInner() {
     return (
       <>
         <Navbar />
-        <main className="mx-auto max-w-6xl px-6 py-12">
-          <section className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-8 shadow-sm">
+        <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+          <section className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-5 shadow-sm sm:p-8">
             <h1 className="font-[var(--font-display)] text-3xl">
               No draft found
             </h1>
@@ -57,7 +57,7 @@ function ReviewCampaignPageInner() {
     <>
       <Navbar />
       <main className="min-h-[calc(100vh-4rem)] bg-[#F7F5F0]">
-        <div className="mx-auto max-w-6xl px-6 py-8">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
           <div className="mb-6 flex items-center justify-between gap-4">
             <button
               type="button"
@@ -69,7 +69,7 @@ function ReviewCampaignPageInner() {
             <p className="text-sm font-medium text-[#1A1A1A]/60">Step Review</p>
           </div>
 
-          <section className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition duration-300 hover:shadow-md lg:p-8 motion-safe:animate-[riseIn_520ms_ease-out_both]">
+          <section className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm transition duration-300 hover:shadow-md sm:p-6 lg:p-8 motion-safe:animate-[riseIn_520ms_ease-out_both]">
             <h1 className="font-[var(--font-display)] text-4xl">
               Review project
             </h1>
@@ -77,7 +77,7 @@ function ReviewCampaignPageInner() {
               Preview all campaign details before launching.
             </p>
 
-            <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_360px]">
               <div className="space-y-6">
                 <div className="rounded-2xl bg-[#F7F5F0] p-5 transition hover:-translate-y-0.5 hover:bg-green-50">
                   <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#2D6A4F]">

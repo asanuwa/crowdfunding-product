@@ -350,7 +350,7 @@ export default function NewCampaignPage() {
           className="flex min-h-[calc(100vh-4rem)] flex-col"
         >
           <header className="border-b border-black/10 bg-white/90 shadow-sm backdrop-blur">
-            <div className="mx-auto flex max-w-6xl flex-col gap-5 px-6 py-5">
+            <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-5 sm:px-6">
               <div className="flex items-center justify-between gap-4">
                 <Link
                   href="/"
@@ -365,7 +365,7 @@ export default function NewCampaignPage() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-1 sm:gap-3">
                   {steps.map((step, index) => {
                     const isDone = index < currentStep;
                     const isActive = index === currentStep;
@@ -382,7 +382,7 @@ export default function NewCampaignPage() {
                             setCurrentStep(index);
                           }
                         }}
-                        className="group flex min-w-0 flex-1 items-center gap-2 rounded-xl p-1 text-left transition duration-200 hover:-translate-y-0.5 hover:bg-black/[0.03] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+                        className="group flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl p-1 text-left transition duration-200 hover:-translate-y-0.5 hover:bg-black/[0.03] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 sm:justify-start"
                       >
                         <span
                           className={
@@ -418,28 +418,28 @@ export default function NewCampaignPage() {
             </div>
           </header>
 
-          <section className="mx-auto flex w-full max-w-6xl flex-1 px-6 py-8 lg:py-10">
+          <section className="mx-auto flex w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:py-10">
             <div
               key={activeStep.id}
               className={
-                "grid w-full grid-cols-1 gap-8 transition-all duration-300 lg:grid-cols-[340px_minmax(0,1fr)] " +
+                "grid w-full grid-cols-1 gap-5 transition-all duration-300 sm:gap-8 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)] " +
                 (direction === "next"
                   ? "animate-[stepInRight_260ms_ease-out]"
                   : "animate-[stepInLeft_260ms_ease-out]")
               }
             >
-              <aside className="rounded-[2rem] bg-[#14382F] p-6 text-white shadow-[0_22px_60px_rgba(20,56,47,0.18)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(20,56,47,0.24)]">
+              <aside className="rounded-3xl bg-[#14382F] p-5 text-white shadow-[0_22px_60px_rgba(20,56,47,0.18)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(20,56,47,0.24)] sm:rounded-[2rem] sm:p-6">
                 <p className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#B7E4C7]">
                   {activeStep.label}
                 </p>
-                <h1 className="mt-3 font-[var(--font-display)] text-4xl leading-tight">
+                <h1 className="mt-3 font-[var(--font-display)] text-3xl leading-tight sm:text-4xl">
                   {activeStep.eyebrow}
                 </h1>
                 <p className="mt-4 text-sm leading-6 text-white/72">
                   Build your campaign in focused steps. You can review every
                   detail before the project goes live.
                 </p>
-                <div className="mt-8 rounded-2xl border border-white/10 bg-white/8 p-4">
+                <div className="mt-6 rounded-2xl border border-white/10 bg-white/8 p-4 sm:mt-8">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#FFDD86]">
                     Launch quality
                   </p>
@@ -449,7 +449,7 @@ export default function NewCampaignPage() {
                 </div>
               </aside>
 
-              <div className="rounded-[2rem] border border-black/5 bg-white p-6 shadow-[0_24px_70px_rgba(20,56,47,0.12)] transition duration-300 hover:shadow-[0_28px_80px_rgba(20,56,47,0.16)] lg:p-8">
+              <div className="rounded-3xl border border-black/5 bg-white p-4 shadow-[0_24px_70px_rgba(20,56,47,0.12)] transition duration-300 hover:shadow-[0_28px_80px_rgba(20,56,47,0.16)] sm:rounded-[2rem] sm:p-6 lg:p-8">
                 {activeStep.id === "basics" ? (
                   <BasicsStep
                     form={form}
@@ -504,7 +504,7 @@ export default function NewCampaignPage() {
           </section>
 
           <footer className="border-t border-black/10 bg-white/90 shadow-[0_-10px_30px_rgba(20,56,47,0.06)] backdrop-blur">
-            <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
               <button
                 type="button"
                 onClick={goBack}
@@ -673,14 +673,14 @@ function MediaStep({
       </p>
       <label
         htmlFor="campaign-cover"
-        className="mt-6 flex min-h-[360px] cursor-pointer flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed border-[#2D6A4F]/30 bg-[linear-gradient(135deg,#FFFDF8_0%,#F1FAF4_100%)] p-5 text-center shadow-inner transition duration-300 hover:-translate-y-1 hover:border-[#2D6A4F] hover:bg-green-50 hover:shadow-md focus-within:ring-2 focus-within:ring-[#2D6A4F] focus-within:ring-offset-2"
+        className="mt-6 flex min-h-[260px] cursor-pointer flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed border-[#2D6A4F]/30 bg-[linear-gradient(135deg,#FFFDF8_0%,#F1FAF4_100%)] p-5 text-center shadow-inner transition duration-300 hover:-translate-y-1 hover:border-[#2D6A4F] hover:bg-green-50 hover:shadow-md focus-within:ring-2 focus-within:ring-[#2D6A4F] focus-within:ring-offset-2 sm:min-h-[360px]"
       >
         {form.coverImage ? (
           <div className="w-full overflow-hidden rounded-2xl">
             {form.coverMediaType === "video" ? (
               <video
                 src={form.coverImage}
-                className="h-[360px] w-full object-cover"
+                className="h-64 w-full object-cover sm:h-[360px]"
                 controls
               />
             ) : (
@@ -688,7 +688,7 @@ function MediaStep({
               <img
                 src={form.coverImage}
                 alt="Campaign cover preview"
-                className="h-[360px] w-full object-cover"
+                className="h-64 w-full object-cover sm:h-[360px]"
               />
             )}
           </div>
@@ -907,7 +907,7 @@ function ReviewStep({
             form.coverMediaType === "video" ? (
               <video
                 src={form.coverImage}
-                className="h-72 w-full object-cover"
+                className="h-56 w-full object-cover sm:h-72"
                 controls
               />
             ) : (
@@ -915,11 +915,11 @@ function ReviewStep({
               <img
                 src={form.coverImage}
                 alt="Campaign cover preview"
-                className="h-72 w-full object-cover"
+                className="h-56 w-full object-cover sm:h-72"
               />
             )
           ) : (
-            <div className="flex h-72 items-center justify-center text-sm text-[#1A1A1A]/50">
+            <div className="flex h-56 items-center justify-center text-sm text-[#1A1A1A]/50 sm:h-72">
               No media uploaded
             </div>
           )}

@@ -25,7 +25,7 @@ export default function CampaignHero({
   return (
     <section
       className={
-        "relative min-h-[430px] overflow-hidden rounded-2xl bg-white shadow-sm " +
+        "relative min-h-[360px] overflow-hidden rounded-2xl bg-white shadow-sm sm:min-h-[430px] " +
         (campaign.coverImage
           ? ""
           : "bg-gradient-to-br from-[#2D6A4F]/10 via-white to-[#74C69D]/10")
@@ -57,8 +57,8 @@ export default function CampaignHero({
         <div className="absolute inset-0 bg-gradient-to-r from-[#2D6A4F]/15 to-[#74C69D]/10" />
       )}
 
-      <div className="relative flex min-h-[430px] items-end p-6 sm:p-8">
-        <div className="flex items-start justify-between gap-6">
+      <div className="relative flex min-h-[360px] items-end p-4 sm:min-h-[430px] sm:p-8">
+        <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="min-w-0">
             <div
               className={
@@ -73,7 +73,7 @@ export default function CampaignHero({
 
             <h1
               className={
-                "mt-3 font-[var(--font-display)] text-4xl leading-tight sm:text-5xl " +
+                "mt-3 font-[var(--font-display)] text-3xl leading-tight sm:text-5xl " +
                 (hasCoverMedia ? "text-white" : "text-[#1A1A1A]")
               }
             >
@@ -82,7 +82,7 @@ export default function CampaignHero({
 
             <p
               className={
-                "mt-2 text-lg " +
+                "mt-2 text-base sm:text-lg " +
                 (hasCoverMedia ? "text-white/85" : "text-[#1A1A1A]/75")
               }
             >
@@ -119,7 +119,7 @@ export default function CampaignHero({
             ) : null}
           </div>
 
-          <div className="shrink-0">
+          <div className="shrink-0 self-start">
             <BookmarkButton
               isBookmarked={campaign.isBookmarked}
               onToggle={onToggleBookmark}

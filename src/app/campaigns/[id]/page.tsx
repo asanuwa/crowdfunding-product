@@ -89,8 +89,8 @@ export default function CampaignPage() {
     return (
       <>
         <Navbar />
-        <main className="mx-auto max-w-6xl px-6 py-12">
-          <section className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-8 shadow-sm transition duration-300 hover:shadow-md motion-safe:animate-[riseIn_520ms_ease-out_both]">
+        <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+          <section className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-5 shadow-sm transition duration-300 hover:shadow-md sm:p-8 motion-safe:animate-[riseIn_520ms_ease-out_both]">
             <h1 className="font-[var(--font-display)] text-3xl">Not Found</h1>
             <p className="mt-3 text-[#1A1A1A]/70">
               The campaign you&apos;re looking for doesn&apos;t exist.
@@ -114,7 +114,7 @@ export default function CampaignPage() {
   return (
     <>
       <Navbar />
-      <main className="mx-auto max-w-6xl px-6 py-8 sm:py-12">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-12">
         <Link
           href="/"
           className="mb-6 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[#1A1A1A] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
@@ -122,7 +122,7 @@ export default function CampaignPage() {
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to home
         </Link>
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start xl:grid-cols-[minmax(0,1fr)_390px]">
           <section className="min-w-0">
             <CampaignHero
               campaign={campaign}

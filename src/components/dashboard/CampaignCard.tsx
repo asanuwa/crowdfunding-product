@@ -220,7 +220,7 @@ export function CampaignCard({
 
   return (
     <article
-      className="group relative w-full overflow-hidden rounded-2xl border border-black/5 bg-white opacity-0 shadow-sm transition-all hover:scale-[1.02] hover:shadow-md motion-safe:animate-[cardFadeIn_450ms_ease-out_forwards]"
+      className="group relative w-full overflow-hidden rounded-2xl border border-black/5 bg-white opacity-0 shadow-sm transition-all hover:shadow-md sm:hover:scale-[1.02] motion-safe:animate-[cardFadeIn_450ms_ease-out_forwards]"
       style={{ animationDelay: `${index * 80}ms` }}
     >
       <Link
@@ -247,7 +247,7 @@ export function CampaignCard({
           <div className={`h-36 bg-gradient-to-br ${gradient}`} aria-hidden />
         )}
 
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
           <div className="flex items-start justify-between gap-12">
             <Badge label={campaign.category} color="gray" />
           </div>
@@ -280,7 +280,7 @@ export function CampaignCard({
         </div>
       </Link>
 
-      <div className="absolute right-4 top-36 flex gap-2">
+      <div className="absolute right-3 top-32 flex gap-2 sm:right-4 sm:top-36">
         <button
           type="button"
           aria-label={

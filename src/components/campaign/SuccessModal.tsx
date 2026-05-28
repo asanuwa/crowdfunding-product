@@ -64,12 +64,12 @@ export default function SuccessModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-6 opacity-100 transition-opacity duration-200 motion-safe:animate-[fadeIn_180ms_ease-out]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 opacity-100 transition-opacity duration-200 sm:p-6 motion-safe:animate-[fadeIn_180ms_ease-out]"
       onClick={onClose}
     >
       <div
         ref={dialogRef}
-        className="w-full max-w-lg rounded-2xl bg-white p-6 text-center shadow-lg motion-safe:animate-[modalScaleIn_180ms_ease-out]"
+        className="w-full max-w-lg rounded-2xl bg-white p-5 text-center shadow-lg sm:p-6 motion-safe:animate-[modalScaleIn_180ms_ease-out]"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -81,7 +81,7 @@ export default function SuccessModal({
         />
         <h2
           id="success-modal-title"
-          className="mt-4 font-[var(--font-display)] text-3xl"
+          className="mt-4 font-[var(--font-display)] text-2xl sm:text-3xl"
         >
           You&apos;re a Backer! &#127881;
         </h2>

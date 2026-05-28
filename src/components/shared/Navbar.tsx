@@ -8,7 +8,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/10 bg-white">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between">
           <Link
             href="/"
