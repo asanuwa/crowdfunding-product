@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 
 import Navbar from "@/components/shared/Navbar";
@@ -10,6 +10,10 @@ import type { Campaign } from "@/types";
 import { useCampaigns } from "@/context/CampaignContext";
 import { generateId } from "@/lib/utils";
 import type { CampaignFormData } from "@/types";
+
+type DraftCampaignContext = ReturnType<typeof useCampaigns> & {
+  draft?: CampaignFormData;
+};
 
 export default function ReviewCampaignPage() {
   return <ReviewCampaignPageInner />;
@@ -19,7 +23,7 @@ function ReviewCampaignPageInner() {
   const router = useRouter();
   const stepFrom = "pledges" as string;
 
-  const campaignsCtx = useCampaigns() as any;
+  const campaignsCtx = useCampaigns() as DraftCampaignContext;
 
   const form = campaignsCtx.draft as CampaignFormData | undefined;
 
@@ -31,13 +35,15 @@ function ReviewCampaignPageInner() {
         <Navbar />
         <main className="mx-auto max-w-6xl px-6 py-12">
           <section className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-8 shadow-sm">
-            <h1 className="font-(--font-display) text-3xl">No draft found</h1>
+            <h1 className="font-[var(--font-display)] text-3xl">
+              No draft found
+            </h1>
             <p className="mt-3 text-[#1A1A1A]/70">
               Start a campaign again to review and launch.
             </p>
             <Link
               href="/campaigns/new"
-              className="mt-6 inline-flex items-center rounded-full bg-[#1A1A1A] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+              className="mt-6 inline-flex items-center rounded-full bg-[#1A1A1A] px-5 py-2.5 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-[#333] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
             >
               Back to campaign wizard
             </Link>
@@ -63,26 +69,28 @@ function ReviewCampaignPageInner() {
             <button
               type="button"
               onClick={goBack}
-              className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-semibold transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+              className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
             >
               Previous
             </button>
             <p className="text-sm font-medium text-[#1A1A1A]/60">Step Review</p>
           </div>
 
-          <section className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm lg:p-8">
-            <h1 className="font-(--font-display) text-4xl">Review project</h1>
+          <section className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition duration-300 hover:shadow-md lg:p-8 motion-safe:animate-[riseIn_520ms_ease-out_both]">
+            <h1 className="font-[var(--font-display)] text-4xl">
+              Review project
+            </h1>
             <p className="mt-2 text-sm text-[#1A1A1A]/65">
               Preview all campaign details before launching.
             </p>
 
             <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
               <div className="space-y-6">
-                <div className="rounded-2xl bg-[#F7F5F0] p-5">
+                <div className="rounded-2xl bg-[#F7F5F0] p-5 transition hover:-translate-y-0.5 hover:bg-green-50">
                   <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#2D6A4F]">
                     {form.category}
                   </p>
-                  <h2 className="mt-3 font-(--font-display) text-3xl leading-tight">
+                  <h2 className="mt-3 font-[var(--font-display)] text-3xl leading-tight">
                     {form.title || "Untitled campaign"}
                   </h2>
                   <p className="mt-2 text-[#1A1A1A]/70">
@@ -90,7 +98,7 @@ function ReviewCampaignPageInner() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-black/10 p-5">
+                <div className="rounded-2xl border border-black/10 p-5 transition hover:-translate-y-0.5 hover:shadow-md">
                   <h3 className="font-semibold">Launch checklist</h3>
                   <ul className="mt-3 space-y-3 text-sm text-[#1A1A1A]/70">
                     <li className="flex items-center gap-2">
@@ -118,7 +126,7 @@ function ReviewCampaignPageInner() {
                   </ul>
                 </div>
 
-                <div className="rounded-2xl border border-black/10 p-5">
+                <div className="rounded-2xl border border-black/10 p-5 transition hover:-translate-y-0.5 hover:shadow-md">
                   <h3 className="font-semibold">Reward tiers</h3>
                   <div className="mt-3 space-y-3">
                     {form.pledges.map(
@@ -128,7 +136,7 @@ function ReviewCampaignPageInner() {
                       ) => (
                         <div
                           key={index}
-                          className="rounded-xl bg-[#F7F5F0] p-4"
+                          className="rounded-xl bg-[#F7F5F0] p-4 transition hover:-translate-y-0.5 hover:bg-green-50"
                         >
                           <p className="text-sm font-semibold">
                             {pledge.title || `Tier ${index + 1}`}
@@ -144,7 +152,7 @@ function ReviewCampaignPageInner() {
               </div>
 
               <aside className="space-y-4">
-                <div className="rounded-2xl bg-[#F7F5F0] p-5">
+                <div className="rounded-2xl bg-[#F7F5F0] p-5 transition hover:-translate-y-0.5 hover:bg-green-50">
                   <p className="text-sm font-medium text-[#1A1A1A]/55">
                     Funding goal
                   </p>
@@ -153,7 +161,7 @@ function ReviewCampaignPageInner() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-[#F7F5F0] p-5">
+                <div className="rounded-2xl bg-[#F7F5F0] p-5 transition hover:-translate-y-0.5 hover:bg-green-50">
                   <p className="text-sm font-medium text-[#1A1A1A]/55">
                     Duration
                   </p>
@@ -162,7 +170,7 @@ function ReviewCampaignPageInner() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-[#F7F5F0] p-5">
+                <div className="rounded-2xl bg-[#F7F5F0] p-5 transition hover:-translate-y-0.5 hover:bg-green-50">
                   <p className="text-sm font-medium text-[#1A1A1A]/55">
                     Reward tiers
                   </p>
@@ -206,7 +214,7 @@ function ReviewCampaignPageInner() {
                     dispatch({ type: "ADD_CAMPAIGN", payload: campaign });
                     router.push(`/campaigns/${campaign.id}`);
                   }}
-                  className="w-full rounded-full bg-[#02A95C] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#018A4B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+                  className="w-full rounded-full bg-[#02A95C] px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#018A4B] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
                 >
                   Launch Project
                 </button>

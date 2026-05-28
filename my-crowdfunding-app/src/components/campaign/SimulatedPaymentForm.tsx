@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-type PaymentMethod = "card" | "usdt" | "paypal";
+type PaymentMethod = "paystack" | "flutterwave" | "card";
 
 type CardFields = {
   cardNumber: string;
@@ -11,10 +11,17 @@ type CardFields = {
   cvv: string;
 };
 
+type GatewayFields = {
+  email: string;
+  phone: string;
+};
+
 type SimulatedPaymentFormProps = {
   pledgeTitle: string;
   pledgeAmount: number;
+  pledgeItemsLeft: number | null;
   totalRaised: number;
+  totalBackers: number;
   currencyCode: string;
   onPaymentComplete: () => void;
 };
@@ -25,19 +32,19 @@ const paymentMethods: Array<{
   description: string;
 }> = [
   {
+    id: "paystack",
+    label: "Paystack",
+    description: "Simulate a Paystack checkout with email and phone.",
+  },
+  {
+    id: "flutterwave",
+    label: "Flutterwave",
+    description: "Simulate a Flutterwave checkout with email and phone.",
+  },
+  {
     id: "card",
     label: "Credit or Debit Card",
     description: "Enter card details for a simulated checkout.",
-  },
-  {
-    id: "usdt",
-    label: "Cryptocurrency (USDT)",
-    description: "Use a simulated wallet transfer confirmation.",
-  },
-  {
-    id: "paypal",
-    label: "PayPal",
-    description: "Confirm with a simulated PayPal email.",
   },
 ];
 
@@ -57,25 +64,34 @@ function formatExpirationDate(value: string) {
 
 function paymentMethodLabel(method: PaymentMethod) {
   if (method === "card") return "card";
-  if (method === "usdt") return "USDT";
-  return "PayPal";
+  if (method === "paystack") return "Paystack";
+  return "Flutterwave";
+}
+
+function isValidEmail(value: string) {
+  return /^\S+@\S+\.\S+$/.test(value.trim());
 }
 
 export default function SimulatedPaymentForm({
   pledgeTitle,
   pledgeAmount,
+  pledgeItemsLeft,
   totalRaised,
+  totalBackers,
   currencyCode,
   onPaymentComplete,
 }: SimulatedPaymentFormProps) {
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod>("paystack");
   const [cardFields, setCardFields] = useState<CardFields>({
     cardNumber: "",
     expirationDate: "",
     cvv: "",
   });
-  const [cryptoTxHash, setCryptoTxHash] = useState("");
-  const [paypalEmail, setPaypalEmail] = useState("");
+  const [gatewayFields, setGatewayFields] = useState<GatewayFields>({
+    email: "",
+    phone: "",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currency = useMemo(
@@ -97,12 +113,11 @@ export default function SimulatedPaymentForm({
       );
     }
 
-    if (paymentMethod === "usdt") {
-      return cryptoTxHash.trim().length >= 8;
-    }
-
-    return /^\S+@\S+\.\S+$/.test(paypalEmail.trim());
-  }, [cardFields, cryptoTxHash, paymentMethod, paypalEmail]);
+    return (
+      isValidEmail(gatewayFields.email) &&
+      onlyDigits(gatewayFields.phone).length >= 7
+    );
+  }, [cardFields, gatewayFields, paymentMethod]);
 
   function updateCardField(name: keyof CardFields, value: string) {
     setCardFields((current) => ({
@@ -116,6 +131,13 @@ export default function SimulatedPaymentForm({
     }));
   }
 
+  function updateGatewayField(name: keyof GatewayFields, value: string) {
+    setGatewayFields((current) => ({
+      ...current,
+      [name]: name === "phone" ? onlyDigits(value).slice(0, 15) : value,
+    }));
+  }
+
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isFormComplete || isSubmitting) return;
@@ -124,17 +146,24 @@ export default function SimulatedPaymentForm({
     await new Promise((resolve) => window.setTimeout(resolve, 1200));
 
     const nextTotalRaised = totalRaised + pledgeAmount;
-    onPaymentComplete();
-    setCardFields({ cardNumber: "", expirationDate: "", cvv: "" });
-    setCryptoTxHash("");
-    setPaypalEmail("");
-    setIsSubmitting(false);
+    const nextBackerNumber = totalBackers + 1;
+    const nextItemsLeft =
+      pledgeItemsLeft === null ? null : Math.max(0, pledgeItemsLeft - 1);
 
-    toast.success("Pledge complete", {
+    toast.success("Payment successful", {
       description: `${pledgeTitle} confirmed via ${paymentMethodLabel(
         paymentMethod,
-      )}. Total raised is now ${currency.format(nextTotalRaised)}.`,
+      )}. You are backer #${nextBackerNumber}. ${
+        nextItemsLeft === null
+          ? "This reward tier has unlimited spots."
+          : `${nextItemsLeft} spot${nextItemsLeft === 1 ? "" : "s"} left in this tier.`
+      } Total raised is now ${currency.format(nextTotalRaised)}.`,
     });
+
+    onPaymentComplete();
+    setCardFields({ cardNumber: "", expirationDate: "", cvv: "" });
+    setGatewayFields({ email: "", phone: "" });
+    setIsSubmitting(false);
   }
 
   return (
@@ -142,10 +171,10 @@ export default function SimulatedPaymentForm({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="font-[var(--font-display)] text-2xl">
-            Payment Details
+            Payment Method
           </h2>
           <p className="mt-1 text-sm text-[#1A1A1A]/65">
-            Choose how to complete your selected pledge.
+            Continue with Paystack, Flutterwave, or a simulated card payment.
           </p>
         </div>
         <div className="rounded-full bg-green-50 px-3 py-1 text-sm font-semibold text-[#2D6A4F]">
@@ -189,6 +218,66 @@ export default function SimulatedPaymentForm({
             })}
           </div>
         </fieldset>
+
+        {paymentMethod === "paystack" || paymentMethod === "flutterwave" ? (
+          <div className="space-y-4 rounded-2xl border border-black/10 p-4">
+            <div className="rounded-xl bg-[#F7F5F0] p-4 text-sm text-[#1A1A1A]/75">
+              <p className="font-semibold text-[#1A1A1A]">
+                {paymentMethod === "paystack"
+                  ? "Paystack checkout"
+                  : "Flutterwave checkout"}
+              </p>
+              <p className="mt-1">
+                This is a safe simulation. No real money is collected, but the
+                pledge stats will update after confirmation.
+              </p>
+              <p className="mt-2 font-mono text-xs text-[#1A1A1A]/70">
+                Reference: CF-{paymentMethod.toUpperCase()}-
+                {Math.round(pledgeAmount * 100)}
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="gateway-email"
+                className="block text-sm font-medium"
+              >
+                Email address
+              </label>
+              <input
+                id="gateway-email"
+                type="email"
+                autoComplete="email"
+                value={gatewayFields.email}
+                onChange={(event) =>
+                  updateGatewayField("email", event.target.value)
+                }
+                className="mt-2 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none transition focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+                placeholder="you@example.com"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="gateway-phone"
+                className="block text-sm font-medium"
+              >
+                Phone number
+              </label>
+              <input
+                id="gateway-phone"
+                inputMode="tel"
+                autoComplete="tel"
+                value={gatewayFields.phone}
+                onChange={(event) =>
+                  updateGatewayField("phone", event.target.value)
+                }
+                className="mt-2 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none transition focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+                placeholder="08012345678"
+              />
+            </div>
+          </div>
+        ) : null}
 
         {paymentMethod === "card" ? (
           <div className="space-y-4 rounded-2xl border border-black/10 p-4">
@@ -256,66 +345,27 @@ export default function SimulatedPaymentForm({
           </div>
         ) : null}
 
-        {paymentMethod === "usdt" ? (
-          <div className="rounded-2xl border border-black/10 p-4">
-            <h3 className="text-sm font-semibold">USDT instructions</h3>
-            <div className="mt-3 rounded-xl bg-[#F7F5F0] p-4 text-sm text-[#1A1A1A]/75">
-              <p>
-                Send exactly{" "}
-                <span className="font-semibold text-[#1A1A1A]">
-                  {currency.format(pledgeAmount)}
-                </span>{" "}
-                worth of USDT to this simulated wallet.
-              </p>
-              <p className="mt-2 break-all font-mono text-xs text-[#1A1A1A]">
-                0xCF0rge0000000000000000000000000000USDT
-              </p>
-            </div>
-            <label
-              htmlFor="payment-crypto-tx"
-              className="mt-4 block text-sm font-medium"
-            >
-              Transaction hash
-            </label>
-            <input
-              id="payment-crypto-tx"
-              value={cryptoTxHash}
-              onChange={(event) => setCryptoTxHash(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
-              placeholder="Paste simulated transaction hash"
-            />
-          </div>
-        ) : null}
-
-        {paymentMethod === "paypal" ? (
-          <div className="rounded-2xl border border-black/10 p-4">
-            <h3 className="text-sm font-semibold">PayPal confirmation</h3>
-            <p className="mt-2 text-sm text-[#1A1A1A]/65">
-              Enter the PayPal email you want to use for this simulated pledge.
-            </p>
-            <label
-              htmlFor="payment-paypal-email"
-              className="mt-4 block text-sm font-medium"
-            >
-              PayPal email
-            </label>
-            <input
-              id="payment-paypal-email"
-              type="email"
-              autoComplete="email"
-              value={paypalEmail}
-              onChange={(event) => setPaypalEmail(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
-              placeholder="you@example.com"
-            />
-          </div>
-        ) : null}
-
         <div className="rounded-xl bg-[#F7F5F0] px-4 py-3 text-sm text-[#1A1A1A]/75">
-          Total after pledge:{" "}
-          <span className="font-semibold text-[#1A1A1A]">
-            {currency.format(totalRaised + pledgeAmount)}
-          </span>
+          <p>
+            Total after pledge:{" "}
+            <span className="font-semibold text-[#1A1A1A]">
+              {currency.format(totalRaised + pledgeAmount)}
+            </span>
+          </p>
+          <p className="mt-1">
+            You will be backer{" "}
+            <span className="font-semibold text-[#1A1A1A]">
+              #{totalBackers + 1}
+            </span>
+            {pledgeItemsLeft === null
+              ? " for this unlimited reward tier."
+              : ` for this tier, with ${Math.max(
+                  0,
+                  pledgeItemsLeft - 1,
+                )} spot${
+                  Math.max(0, pledgeItemsLeft - 1) === 1 ? "" : "s"
+                } left after payment.`}
+          </p>
         </div>
 
         <button
@@ -323,7 +373,9 @@ export default function SimulatedPaymentForm({
           disabled={!isFormComplete || isSubmitting}
           className="w-full rounded-full bg-[#1A1A1A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-black/20 disabled:text-black/45"
         >
-          {isSubmitting ? "Processing..." : "Complete Pledge"}
+          {isSubmitting
+            ? "Processing..."
+            : `Complete with ${paymentMethodLabel(paymentMethod)}`}
         </button>
       </form>
     </section>

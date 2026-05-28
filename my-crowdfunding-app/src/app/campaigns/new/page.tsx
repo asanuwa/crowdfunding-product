@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, ImagePlus, PlayCircle } from "lucide-react";
+import { toast } from "sonner";
 import Navbar from "@/components/shared/Navbar";
 import type { Campaign, CampaignFormData, PledgeTier } from "@/types";
 import { useCampaigns } from "@/context/CampaignContext";
@@ -66,7 +67,7 @@ function splitPerks(raw: string): string[] {
 
 function fieldClass(hasError?: boolean) {
   return (
-    "mt-2 w-full rounded-xl border bg-white px-4 py-3 outline-none transition focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 " +
+    "mt-2 w-full rounded-xl border bg-[#FFFDF8] px-4 py-3 outline-none transition hover:border-[#2D6A4F]/30 focus-visible:shadow-md focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 " +
     (hasError ? "border-red-300" : "border-black/10")
   );
 }
@@ -107,11 +108,20 @@ export default function NewCampaignPage() {
   const [customCategory, setCustomCategory] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [canLaunch, setCanLaunch] = useState(false);
 
   const activeStep = steps[currentStep];
+  const isReviewStep = activeStep.id === "review";
   const progress = ((currentStep + 1) / steps.length) * 100;
   const campaignCategory =
     form.category === OTHER_CATEGORY ? customCategory.trim() : form.category;
+
+  useEffect(() => {
+    if (!isReviewStep) return;
+
+    const launchDelay = window.setTimeout(() => setCanLaunch(true), 700);
+    return () => window.clearTimeout(launchDelay);
+  }, [isReviewStep]);
 
   function clearError(field: keyof Omit<FormErrors, "pledges">) {
     setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -238,25 +248,30 @@ export default function NewCampaignPage() {
     };
   }
 
-  function goNext() {
-    if (!validate(activeStep.id)) return;
-    setDirection("next");
-    setCurrentStep((step) => Math.min(step + 1, steps.length - 1));
-  }
-
   function goBack() {
+    setCanLaunch(false);
     setDirection("previous");
     setCurrentStep((step) => Math.max(step - 1, 0));
   }
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (isSubmitting || !validate("all")) return;
+    if (!isReviewStep || !canLaunch || isSubmitting || !validate("all")) return;
 
     setIsSubmitting(true);
     const campaign = buildCampaign();
     dispatch({ type: "ADD_CAMPAIGN", payload: campaign });
+    toast.success("Campaign launched successfully", {
+      description: `${campaign.title} is now live and ready for backers.`,
+    });
     router.push(`/campaigns/${campaign.id}`);
+  }
+
+  function onContinue() {
+    if (!validate(activeStep.id)) return;
+    setCanLaunch(false);
+    setDirection("next");
+    setCurrentStep((step) => Math.min(step + 1, steps.length - 1));
   }
 
   function addAnotherPledge() {
@@ -322,17 +337,17 @@ export default function NewCampaignPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-[calc(100vh-4rem)] bg-[#F7F5F0]">
+      <main className="min-h-[calc(100vh-4rem)] bg-[linear-gradient(180deg,#F7F5F0_0%,#FFFFFF_42%,#EEF8F1_100%)]">
         <form
           onSubmit={onSubmit}
           className="flex min-h-[calc(100vh-4rem)] flex-col"
         >
-          <header className="border-b border-black/10 bg-white">
+          <header className="border-b border-black/10 bg-white/90 shadow-sm backdrop-blur">
             <div className="mx-auto flex max-w-6xl flex-col gap-5 px-6 py-5">
               <div className="flex items-center justify-between gap-4">
                 <Link
                   href="/"
-                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[#1A1A1A] shadow-sm transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[#1A1A1A] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
                 >
                   <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                   Back
@@ -353,22 +368,23 @@ export default function NewCampaignPage() {
                         type="button"
                         onClick={() => {
                           if (index <= currentStep || validate(activeStep.id)) {
+                            setCanLaunch(false);
                             setDirection(
                               index > currentStep ? "next" : "previous",
                             );
                             setCurrentStep(index);
                           }
                         }}
-                        className="flex min-w-0 flex-1 items-center gap-2 rounded-xl p-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+                        className="group flex min-w-0 flex-1 items-center gap-2 rounded-xl p-1 text-left transition duration-200 hover:-translate-y-0.5 hover:bg-black/[0.03] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
                       >
                         <span
                           className={
-                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold " +
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-transform duration-200 group-hover:scale-105 " +
                             (isDone
                               ? "bg-[#02A95C] text-white"
                               : isActive
-                                ? "bg-[#1A1A1A] text-white"
-                                : "bg-black/10 text-[#1A1A1A]/60")
+                                ? "bg-[#14382F] text-white shadow-[0_8px_18px_rgba(20,56,47,0.22)]"
+                                : "bg-[#F7F5F0] text-[#1A1A1A]/60")
                           }
                         >
                           {isDone ? <Check className="h-4 w-4" /> : index + 1}
@@ -387,7 +403,7 @@ export default function NewCampaignPage() {
                 </div>
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/10">
                   <div
-                    className="h-full rounded-full bg-[#02A95C] transition-all duration-500"
+                    className="h-full rounded-full bg-[linear-gradient(90deg,#02A95C,#74C69D,#FFB703)] transition-all duration-500 ease-out motion-safe:animate-[progressGlow_1600ms_ease-in-out_infinite]"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -395,7 +411,7 @@ export default function NewCampaignPage() {
             </div>
           </header>
 
-          <section className="mx-auto flex w-full max-w-6xl flex-1 px-6 py-8">
+          <section className="mx-auto flex w-full max-w-6xl flex-1 px-6 py-8 lg:py-10">
             <div
               key={activeStep.id}
               className={
@@ -405,20 +421,28 @@ export default function NewCampaignPage() {
                   : "animate-[stepInLeft_260ms_ease-out]")
               }
             >
-              <aside className="rounded-3xl bg-[#D8F3DC] p-6 shadow-sm">
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#2D6A4F]">
+              <aside className="rounded-[2rem] bg-[#14382F] p-6 text-white shadow-[0_22px_60px_rgba(20,56,47,0.18)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(20,56,47,0.24)]">
+                <p className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#B7E4C7]">
                   {activeStep.label}
                 </p>
-                <h1 className="mt-3 font-(--font-display) text-4xl leading-tight">
+                <h1 className="mt-3 font-[var(--font-display)] text-4xl leading-tight">
                   {activeStep.eyebrow}
                 </h1>
-                <p className="mt-4 text-sm text-[#1A1A1A]/70">
+                <p className="mt-4 text-sm leading-6 text-white/72">
                   Build your campaign in focused steps. You can review every
                   detail before the project goes live.
                 </p>
+                <div className="mt-8 rounded-2xl border border-white/10 bg-white/8 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#FFDD86]">
+                    Launch quality
+                  </p>
+                  <p className="mt-2 text-sm text-white/75">
+                    Clear story, honest goal, strong rewards.
+                  </p>
+                </div>
               </aside>
 
-              <div className="rounded-3xl bg-white p-6 shadow-sm lg:p-8">
+              <div className="rounded-[2rem] border border-black/5 bg-white p-6 shadow-[0_24px_70px_rgba(20,56,47,0.12)] transition duration-300 hover:shadow-[0_28px_80px_rgba(20,56,47,0.16)] lg:p-8">
                 {activeStep.id === "basics" ? (
                   <BasicsStep
                     form={form}
@@ -462,6 +486,7 @@ export default function NewCampaignPage() {
                     form={form}
                     category={campaignCategory}
                     goToStep={(step) => {
+                      setCanLaunch(false);
                       setDirection(step > currentStep ? "next" : "previous");
                       setCurrentStep(step);
                     }}
@@ -471,40 +496,34 @@ export default function NewCampaignPage() {
             </div>
           </section>
 
-          <footer className="border-t border-black/10 bg-white">
+          <footer className="border-t border-black/10 bg-white/90 shadow-[0_-10px_30px_rgba(20,56,47,0.06)] backdrop-blur">
             <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
               <button
                 type="button"
                 onClick={goBack}
                 disabled={currentStep === 0}
-                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-semibold transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-semibold transition duration-200 hover:-translate-y-0.5 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
               >
                 Previous
               </button>
 
-              {activeStep.id === "review" ? (
+              {isReviewStep ? (
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="rounded-full bg-[#02A95C] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#018A4B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isSubmitting || !canLaunch}
+                  className="rounded-full bg-[#02A95C] px-6 py-2.5 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#018A4B] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSubmitting ? "Launching..." : "Launch Project"}
+                  {isSubmitting
+                    ? "Launching..."
+                    : canLaunch
+                      ? "Launch Project"
+                      : "Reviewing..."}
                 </button>
               ) : (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (activeStep.id === "pledges") {
-                      if (!validate(activeStep.id)) return;
-                      setDirection("next");
-                      setCurrentStep((step) =>
-                        Math.min(step + 1, steps.length - 1),
-                      );
-                      return;
-                    }
-                    goNext();
-                  }}
-                  className="rounded-full bg-[#02A95C] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#018A4B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+                  onClick={onContinue}
+                  className="rounded-full bg-[#02A95C] px-6 py-2.5 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#018A4B] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
                 >
                   Continue
                 </button>
@@ -534,7 +553,7 @@ function BasicsStep({
 }) {
   return (
     <div>
-      <h2 className="font-(--font-display) text-3xl">Project basics</h2>
+      <h2 className="font-[var(--font-display)] text-3xl">Project basics</h2>
       <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
         <TextField
           id="campaign-title"
@@ -640,21 +659,21 @@ function MediaStep({
 }) {
   return (
     <div>
-      <h2 className="font-(--font-display) text-3xl">Campaign media</h2>
+      <h2 className="font-[var(--font-display)] text-3xl">Campaign media</h2>
       <p className="mt-2 text-sm text-[#1A1A1A]/65">
         Upload a photo or video from your device. This will become the campaign
         cover.
       </p>
       <label
         htmlFor="campaign-cover"
-        className="mt-6 flex min-h-90 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#2D6A4F]/30 bg-[#F7F5F0] p-5 text-center transition hover:border-[#2D6A4F] hover:bg-green-50 focus-within:ring-2 focus-within:ring-[#2D6A4F] focus-within:ring-offset-2"
+        className="mt-6 flex min-h-[360px] cursor-pointer flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed border-[#2D6A4F]/30 bg-[linear-gradient(135deg,#FFFDF8_0%,#F1FAF4_100%)] p-5 text-center shadow-inner transition duration-300 hover:-translate-y-1 hover:border-[#2D6A4F] hover:bg-green-50 hover:shadow-md focus-within:ring-2 focus-within:ring-[#2D6A4F] focus-within:ring-offset-2"
       >
         {form.coverImage ? (
           <div className="w-full overflow-hidden rounded-2xl">
             {form.coverMediaType === "video" ? (
               <video
                 src={form.coverImage}
-                className="h-90 w-full object-cover"
+                className="h-[360px] w-full object-cover"
                 controls
               />
             ) : (
@@ -662,19 +681,21 @@ function MediaStep({
               <img
                 src={form.coverImage}
                 alt="Campaign cover preview"
-                className="h-90 w-full object-cover"
+                className="h-[360px] w-full object-cover"
               />
             )}
           </div>
         ) : (
           <>
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-[0_12px_28px_rgba(20,56,47,0.12)]">
               <ImagePlus
                 className="h-7 w-7 text-[#2D6A4F]"
                 aria-hidden="true"
               />
             </div>
-            <p className="mt-4 text-base font-semibold">Upload cover media</p>
+            <p className="mt-4 text-base font-semibold text-[#14382F]">
+              Upload cover media
+            </p>
             <p className="mt-1 max-w-md text-sm text-[#1A1A1A]/60">
               Use an image or short video up to 6MB.
             </p>
@@ -716,7 +737,7 @@ function StoryStep({
 }) {
   return (
     <div>
-      <h2 className="font-(--font-display) text-3xl">Tell your story</h2>
+      <h2 className="font-[var(--font-display)] text-3xl">Tell your story</h2>
       <textarea
         value={form.story}
         onChange={(event) => {
@@ -724,7 +745,7 @@ function StoryStep({
           clearError("story");
         }}
         className={
-          "mt-6 min-h-105 w-full rounded-2xl border bg-white px-5 py-4 outline-none transition focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 " +
+          "mt-6 min-h-[420px] w-full rounded-2xl border bg-white px-5 py-4 outline-none transition focus-visible:shadow-md focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 " +
           (errors.story ? "border-red-300" : "border-black/10")
         }
         placeholder="Share what happened, who this helps, and how funds will be used."
@@ -751,21 +772,24 @@ function PledgesStep({
 }) {
   return (
     <div>
-      <h2 className="font-(--font-display) text-3xl">Reward tiers</h2>
+      <h2 className="font-[var(--font-display)] text-3xl">Reward tiers</h2>
       <div className="mt-6 space-y-5">
         {pledges.map((pledge, index) => {
           const pledgeErrors = errors.pledges?.[index] ?? {};
           return (
-            <div key={index} className="rounded-2xl border border-black/10 p-5">
+            <div
+              key={index}
+              className="rounded-2xl border border-black/10 bg-[#FFFDF8] p-5 transition duration-300 hover:-translate-y-0.5 hover:border-[#2D6A4F]/30 hover:shadow-md"
+            >
               <div className="flex items-center justify-between gap-4">
-                <h3 className="font-(--font-display) text-xl">
+                <h3 className="font-[var(--font-display)] text-xl">
                   Tier {index + 1}
                 </h3>
                 {index > 0 ? (
                   <button
                     type="button"
                     onClick={() => removePledge(index)}
-                    className="rounded-md text-sm text-red-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+                    className="rounded-md text-sm text-red-600 transition hover:-translate-y-0.5 hover:underline active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
                   >
                     Remove
                   </button>
@@ -824,7 +848,7 @@ function PledgesStep({
                     updatePledge(index, { description: event.target.value })
                   }
                   className={
-                    "mt-2 min-h-24 w-full rounded-xl border bg-white px-4 py-3 outline-none transition focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 " +
+                    "mt-2 min-h-24 w-full rounded-xl border bg-white px-4 py-3 outline-none transition focus-visible:shadow-md focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 " +
                     (pledgeErrors.description
                       ? "border-red-300"
                       : "border-black/10")
@@ -844,7 +868,7 @@ function PledgesStep({
         <button
           type="button"
           onClick={addAnotherPledge}
-          className="mt-5 w-full rounded-full border border-black/10 px-5 py-3 text-sm font-semibold transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+          className="mt-5 w-full rounded-full border border-black/10 px-5 py-3 text-sm font-semibold transition duration-200 hover:-translate-y-0.5 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
         >
           Add Another Tier
         </button>
@@ -864,13 +888,13 @@ function ReviewStep({
 }) {
   return (
     <div>
-      <h2 className="font-(--font-display) text-3xl">Review project</h2>
+      <h2 className="font-[var(--font-display)] text-3xl">Review project</h2>
       <p className="mt-2 text-sm text-[#1A1A1A]/65">
         Preview all campaign details before launching. Use the edit buttons to
         jump back to any section.
       </p>
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-black/10 bg-white">
+      <div className="mt-6 overflow-hidden rounded-3xl border border-black/10 bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
         <div className="overflow-hidden bg-[#F7F5F0]">
           {form.coverImage ? (
             form.coverMediaType === "video" ? (
@@ -894,13 +918,13 @@ function ReviewStep({
           )}
         </div>
 
-        <div className="p-6">
+        <div className="bg-[linear-gradient(180deg,#FFFFFF_0%,#FFFDF8_100%)] p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <span className="inline-flex rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-[#2D6A4F]">
                 {category || "Uncategorized"}
               </span>
-              <h3 className="mt-3 font-(--font-display) text-4xl leading-tight">
+              <h3 className="mt-3 font-[var(--font-display)] text-4xl leading-tight">
                 {form.title || "Untitled campaign"}
               </h3>
               <p className="mt-2 text-[#1A1A1A]/70">
@@ -910,7 +934,7 @@ function ReviewStep({
             <button
               type="button"
               onClick={() => goToStep(0)}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-[#2D6A4F] hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+              className="rounded-full px-4 py-2 text-sm font-semibold text-[#2D6A4F] transition hover:-translate-y-0.5 hover:bg-green-50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
             >
               Edit basics
             </button>
@@ -960,7 +984,10 @@ function ReviewStep({
         <ReviewCard title="Reward tiers" onEdit={() => goToStep(3)}>
           <div className="space-y-3">
             {form.pledges.map((pledge, index) => (
-              <div key={index} className="rounded-xl bg-[#F7F5F0] p-4">
+              <div
+                key={index}
+                className="rounded-xl bg-[#F7F5F0] p-4 transition hover:bg-green-50"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold">
@@ -1016,7 +1043,7 @@ function ReviewStep({
 
 function ReviewMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-[#F7F5F0] p-4">
+    <div className="rounded-2xl border border-black/5 bg-[#F7F5F0] p-4 transition duration-300 hover:-translate-y-0.5 hover:bg-green-50">
       <p className="text-xs font-medium text-[#1A1A1A]/55">{label}</p>
       <p className="mt-1 text-lg font-bold text-[#1A1A1A]">{value}</p>
     </div>
@@ -1033,13 +1060,13 @@ function ReviewCard({
   onEdit: () => void;
 }) {
   return (
-    <section className="rounded-2xl border border-black/10 p-4">
+    <section className="rounded-2xl border border-black/10 bg-white p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="font-semibold">{title}</h3>
         <button
           type="button"
           onClick={onEdit}
-          className="rounded-full px-3 py-1 text-sm font-medium text-[#2D6A4F] hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+          className="rounded-full px-3 py-1 text-sm font-medium text-[#2D6A4F] transition hover:-translate-y-0.5 hover:bg-green-50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
         >
           Edit
         </button>

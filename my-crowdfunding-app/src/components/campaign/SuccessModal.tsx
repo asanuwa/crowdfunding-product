@@ -81,7 +81,7 @@ export default function SuccessModal({
         />
         <h2
           id="success-modal-title"
-          className="mt-4 font-(--font-display) text-3xl"
+          className="mt-4 font-[var(--font-display)] text-3xl"
         >
           You&apos;re a Backer! &#127881;
         </h2>
@@ -98,7 +98,7 @@ export default function SuccessModal({
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="rounded-full bg-[#1A1A1A] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+            className="rounded-full bg-[#1A1A1A] px-6 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-[#333] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
           >
             Got it!
           </button>

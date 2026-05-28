@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -32,8 +32,11 @@ export default function CampaignPage() {
   const [confirmedPledge, setConfirmedPledge] = useState<PledgeTier | null>(
     null,
   );
+  const [paymentPledgeId, setPaymentPledgeId] = useState<string | null>(null);
+  const paymentSectionRef = useRef<HTMLDivElement>(null);
 
   function onSelect(campaignId: string, pledgeId: string) {
+    setPaymentPledgeId(null);
     dispatch({
       type: "SELECT_PLEDGE",
       payload: { campaignId, pledgeId },
@@ -43,6 +46,7 @@ export default function CampaignPage() {
   function onConfirm(campaignId: string, pledgeId: string) {
     const pledge = campaign?.pledges.find((p) => p.id === pledgeId) ?? null;
     setConfirmedPledge(pledge);
+    setPaymentPledgeId(pledge?.id ?? null);
   }
 
   function onPaymentComplete(campaignId: string, pledgeId: string) {
@@ -68,19 +72,32 @@ export default function CampaignPage() {
     setShowModal(false);
   }
 
+  useEffect(() => {
+    if (!paymentPledgeId) return;
+
+    const scrollTimer = window.setTimeout(() => {
+      paymentSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 80);
+
+    return () => window.clearTimeout(scrollTimer);
+  }, [paymentPledgeId]);
+
   if (!id || !campaign) {
     return (
       <>
         <Navbar />
         <main className="mx-auto max-w-6xl px-6 py-12">
-          <section className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-8 shadow-sm">
-            <h1 className="font-(--font-display) text-3xl">Not Found</h1>
+          <section className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-8 shadow-sm transition duration-300 hover:shadow-md motion-safe:animate-[riseIn_520ms_ease-out_both]">
+            <h1 className="font-[var(--font-display)] text-3xl">Not Found</h1>
             <p className="mt-3 text-[#1A1A1A]/70">
               The campaign you&apos;re looking for doesn&apos;t exist.
             </p>
             <Link
               href="/"
-              className="mt-6 inline-flex items-center rounded-full bg-[#1A1A1A] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+              className="mt-6 inline-flex items-center rounded-full bg-[#1A1A1A] px-5 py-2.5 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-[#333] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
             >
               Back to home
             </Link>
@@ -91,7 +108,8 @@ export default function CampaignPage() {
   }
 
   const { totalRaised, goal, totalBackers, daysLeft } = campaign;
-  const selectedPledge = campaign.pledges.find((pledge) => pledge.selected);
+  const paymentPledge =
+    campaign.pledges.find((pledge) => pledge.id === paymentPledgeId) ?? null;
 
   return (
     <>
@@ -99,7 +117,7 @@ export default function CampaignPage() {
       <main className="mx-auto max-w-6xl px-6 py-8 sm:py-12">
         <Link
           href="/"
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[#1A1A1A] shadow-sm transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[#1A1A1A] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to home
@@ -127,20 +145,28 @@ export default function CampaignPage() {
               pledges={campaign.pledges}
               campaignId={campaign.id}
               currencyCode={campaign.currencyCode}
+              paymentPledgeId={paymentPledgeId}
               onSelect={onSelect}
               onConfirm={onConfirm}
             />
 
-            {selectedPledge ? (
-              <SimulatedPaymentForm
-                pledgeTitle={selectedPledge.title}
-                pledgeAmount={selectedPledge.amount}
-                totalRaised={campaign.totalRaised}
-                currencyCode={campaign.currencyCode}
-                onPaymentComplete={() =>
-                  onPaymentComplete(campaign.id, selectedPledge.id)
-                }
-              />
+            {paymentPledge ? (
+              <div
+                ref={paymentSectionRef}
+                className="scroll-mt-24 motion-safe:animate-[riseIn_360ms_ease-out_both]"
+              >
+                <SimulatedPaymentForm
+                  pledgeTitle={paymentPledge.title}
+                  pledgeAmount={paymentPledge.amount}
+                  pledgeItemsLeft={paymentPledge.itemsLeft}
+                  totalRaised={campaign.totalRaised}
+                  totalBackers={campaign.totalBackers}
+                  currencyCode={campaign.currencyCode}
+                  onPaymentComplete={() =>
+                    onPaymentComplete(campaign.id, paymentPledge.id)
+                  }
+                />
+              </div>
             ) : null}
           </aside>
 

@@ -7,12 +7,14 @@ export default function PledgeSection({
   pledges,
   campaignId,
   currencyCode,
+  paymentPledgeId,
   onSelect,
   onConfirm,
 }: {
   pledges: PledgeTier[];
   campaignId: string;
   currencyCode: string;
+  paymentPledgeId?: string | null;
   onSelect: (campaignId: string, pledgeId: string) => void;
   onConfirm: (campaignId: string, pledgeId: string) => void;
 }) {
@@ -20,6 +22,7 @@ export default function PledgeSection({
     () => pledges.find((p) => p.selected) ?? null,
     [pledges],
   );
+  const isPaymentOpen = Boolean(selected && selected.id === paymentPledgeId);
 
   return (
     <section className="rounded-2xl bg-white p-6 shadow-sm">
@@ -56,11 +59,17 @@ export default function PledgeSection({
           onClick={() => {
             if (selected) onConfirm(campaignId, selected.id);
           }}
-          className="rounded-full bg-[#2D6A4F] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#24563f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-black/20 disabled:text-black/45"
+          aria-expanded={isPaymentOpen}
+          className="rounded-full bg-[#2D6A4F] px-6 py-3 text-sm font-medium text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#24563f] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-black/20 disabled:text-black/45"
         >
-          Continue to Payment
+          {isPaymentOpen ? "Payment Ready" : "Continue to Payment"}
         </button>
       </div>
+      {isPaymentOpen ? (
+        <p className="mt-3 rounded-xl bg-green-50 px-4 py-3 text-sm font-medium text-[#2D6A4F]">
+          Payment options are open below.
+        </p>
+      ) : null}
     </section>
   );
 }
